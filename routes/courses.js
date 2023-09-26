@@ -49,4 +49,31 @@ router.get('/my-courses', async (req, res) => {
     }
 });
 
+
+
+router.post('/:courseId/weights', async (req, res) => {
+    try {
+        const { courseId } = req.params;
+        const weights = req.body;
+
+        // Parse the courseId to Number as it's saved as a number in the DB.
+        const parsedCourseId = Number(courseId);
+
+        const course = await Course.findOne({ courseId: parsedCourseId });
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        course.weights = weights;
+        await course.save();
+
+        res.json({ message: 'Weights updated successfully', course });
+
+    } catch (error) {
+        console.error('Error updating weights:', error.message);
+        res.status(500).json({ error: 'Failed to update weights', details: error.message });
+    }
+});
+
+
 module.exports = router;

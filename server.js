@@ -13,8 +13,11 @@ app.use(express.json());
 const courseRoutes = require('./routes/courses');
 app.use('/api/courses', courseRoutes);
 
+// Use the environment variable for MongoDB connection
+const mongoDBUri = process.env.MONGODB_URI;
+
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://DroidThePug:turtle33!@cluster0.3grnvay.mongodb.net/GradePal?retryWrites=true&w=majority', {
+mongoose.connect(mongoDBUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
