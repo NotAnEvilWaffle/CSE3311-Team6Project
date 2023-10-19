@@ -54,7 +54,7 @@ router.get('/:courseId/grades', async (req, res) => {
 router.get('/my-profile', async (req, res) => {
     try {
         const canvasToken = process.env.CANVAS_ACCESS_TOKEN;
-        const apiUrl = 'https://canvas.instructure.com/api/v1/users/self';
+        const apiUrl = 'https://uta.instructure.com/api/v1/users/self';
 
         // Make an API call to Canvas using the token.
         const response = await axios.get(apiUrl, {
@@ -80,7 +80,7 @@ router.get('/:courseId/assignments', async (req, res) => {
     try {
         const { courseId } = req.params;
         const canvasToken = process.env.CANVAS_ACCESS_TOKEN;
-        const apiUrl = `https://canvas.instructure.com/api/v1/courses/${courseId}/assignments`;
+        const apiUrl = `https://canvas.instructure.com/api/v1/user/courses/${courseId}/assignments`;
 
         // Make an API call to Canvas to get the assignments for the specified course
         const response = await axios.get(apiUrl, {
@@ -123,6 +123,63 @@ router.get('/:courseId/assignments/:assignmentId/submissions/:userId', async (re
     }
 });
 
+router.get('/:userId/courses/:courseId/assignments', async (req, res) => {
+    try {
+        const { userId, courseId} = req.params;
+        const canvasToken = process.env.CANVAS_ACCESS_TOKEN;
+        const apiUrl = `https://uta.instructure.com/api/v1/users/${userId}/courses/${courseId}/assignments?include[]=submission`;
+
+        // Make an API call to Canvas to get the submission for the specified assignment and student
+        const response = await axios.get(apiUrl, {
+            headers: {
+                'Authorization': `Bearer ${canvasToken}`
+            }
+        });
+
+        const assignments = response.data;
+        console.log(assignments);
+        const gradedAssignments = [];
+
+        for (const assignment of assignments) {
+
+            const grade = assignment.submission ? assignment.submission.score : 'N/A';
+            const assignmentInfo = [assignment.name, grade];
+            gradedAssignments.push(assignmentInfo);
+
+        }
+
+        res.json(gradedAssignments);
+
+    } catch (error) {
+        console.error('Error fetching assignments:', error.message);
+        res.status(500).json({ error: 'Failed to fetch assignments', details: error.message });
+    }
+});
+
+router.get('/:courseId/courseName', async (req, res) => {
+    try {
+
+        const { courseId } = req.params;
+        const canvasToken = process.env.CANVAS_ACCESS_TOKEN;
+        const apiUrl = `https://uta.instructure.com/api/v1/courses/${courseId}`;
+
+        // Make an API call to Canvas to get the enrollments for the logged-in user
+        const response = await axios.get(apiUrl, {
+            headers: {
+                'Authorization': `Bearer ${canvasToken}`
+            }
+        });
+
+        // Process the response to extract the grades information
+        const courseName = response.data.name;
+
+        res.json(courseName);
+
+    } catch (error) {
+        console.error('Error fetching course:', error.message);
+        res.status(500).json({ error: 'Failed to fetch course', details: error.message });
+    }
+});
 
 
 // Endpoint to fetch grades for a specific student in all courses from Canvas
@@ -162,7 +219,7 @@ router.get('/my-grades', async (req, res) => {
 router.get('/my-courses', async (req, res) => {
     try {
         const canvasToken = process.env.CANVAS_ACCESS_TOKEN;
-        const apiUrl = 'https://canvas.instructure.com/api/v1/courses?enrollment_state=active';
+        const apiUrl = 'https://uta.instructure.com/api/v1/courses?enrollment_state=active';
 
         // Make an API call to Canvas using the token.
         const response = await axios.get(apiUrl, {

@@ -9,7 +9,7 @@ function MyCourses() {
         async function fetchCourses() {
             try {
                 const response = await axios.get('http://localhost:5000/api/courses/my-courses');
-                console.log("Fetched Courses:", response.data); 
+                // console.log("Fetched Courses:", response.data); 
                 setCourses(response.data);
             } catch (error) {
                 console.error("Error fetching courses:", error);

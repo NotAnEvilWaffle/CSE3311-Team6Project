@@ -1,26 +1,66 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
 function ViewGrades() {
-    // Hardcoded data
-    const courseInfo = {
-        name: "CSE-4345-COMPUTATIONAL METHODS",
-        overallScore: "92.53%",
-        assignments: [
-            { name: "HW1", score: "100/100" },
-            { name: "Quiz1", score: "50/60" },
-            { name: "Quiz2", score: "50/60" }
-        ]
-    };
+    const { courseId } = useParams(); // getting courseId from the URL
+    const [courseInfo, setCourseInfo] = useState({
+        courseName: '',
+        overallScore: '',
+        gradedAssignments: [] 
+    });
+
+    const [userId, setUserId] = useState(null);
+
+    useEffect(() => {
+        async function fetchCourseInfo() {
+
+            try {
+                const response = await axios.get(`http://localhost:5000/api/courses/my-profile`);
+                const userId = response.data.id;
+                setUserId(userId);
+            } catch (error) {
+                console.error("Error finding User Profile:", error);
+            }
+
+            try {
+                const response = await axios.get(`http://localhost:5000/api/courses/${userId}/courses/${courseId}/assignments`);
+                setCourseInfo(prevState => ({
+                    ...prevState,
+                    gradedAssignments: response.data}));
+                console.log('ViewGrades response:', response.data);
+            } catch (error) {
+                console.error("Error fetching course info:", error);
+            }
+
+            try {
+                const response = await axios.get(`http://localhost:5000/api/courses/${courseId}/courseName`);
+                const courseName = response.data;
+                setCourseInfo(prevState => ({
+                    ...prevState,
+                    courseName: courseName,
+                }));
+            } catch (error) {
+                console.error("Error finding Course Profile:", error);
+            }
+
+
+
+        };
+        fetchCourseInfo();
+    }, [courseInfo, userId]);
+
+
 
     return (
         <div>
-            <h1>Grades for: {courseInfo.name}</h1>
+            <h1>Grades for: {courseInfo.courseName}</h1>
             <p>Overall Score: {courseInfo.overallScore}</p>
             <h2>Assignments</h2>
             <ul>
-                {courseInfo.assignments.map((assignment, index) => (
+                {courseInfo.gradedAssignments.map((assignment, index) => (
                     <li key={index}>
-                        {assignment.name}: {assignment.score}
+                        {assignment[0]}: {assignment[1]}
                     </li>
                 ))}
             </ul>
