@@ -15,6 +15,7 @@ function ViewGrades() {
     useEffect(() => {
         async function fetchCourseInfo() {
 
+            // Get the current UserId
             try {
                 const response = await axios.get(`http://localhost:5000/api/courses/my-profile`);
                 const userId = response.data.id;
@@ -24,15 +25,28 @@ function ViewGrades() {
             }
 
             try {
+                const response = await axios.get(`http://localhost:5000/api/courses/${userId}/courses/${courseId}/currentScore`);
+                setCourseInfo(prevState => ({
+                    ...prevState,
+                    overallScore: response.data,
+                }));
+                console.log("Overall Score:",courseInfo.overallScore)
+            } catch (error) {
+                console.error("Error finding Course Score:", error);
+            }
+
+            // Get that user's assignments for the selected courseId
+            try {
                 const response = await axios.get(`http://localhost:5000/api/courses/${userId}/courses/${courseId}/assignments`);
                 setCourseInfo(prevState => ({
                     ...prevState,
                     gradedAssignments: response.data}));
-                console.log('ViewGrades response:', response.data);
+
             } catch (error) {
                 console.error("Error fetching course info:", error);
             }
 
+            // Get the name of the current course
             try {
                 const response = await axios.get(`http://localhost:5000/api/courses/${courseId}/courseName`);
                 const courseName = response.data;

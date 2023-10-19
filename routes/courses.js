@@ -137,11 +137,12 @@ router.get('/:userId/courses/:courseId/assignments', async (req, res) => {
         });
 
         const assignments = response.data;
-        console.log(assignments);
         const gradedAssignments = [];
 
+        
         for (const assignment of assignments) {
 
+            // If not graded use N/A
             const grade = assignment.submission ? assignment.submission.score : 'N/A';
             const assignmentInfo = [assignment.name, grade];
             gradedAssignments.push(assignmentInfo);
@@ -174,6 +175,39 @@ router.get('/:courseId/courseName', async (req, res) => {
         const courseName = response.data.name;
 
         res.json(courseName);
+
+    } catch (error) {
+        console.error('Error fetching course:', error.message);
+        res.status(500).json({ error: 'Failed to fetch course', details: error.message });
+    }
+});
+
+router.get('/:userId/courses/:courseId/currentScore', async (req, res) => {
+    try {
+
+        const { userId , courseId } = req.params;
+        const canvasToken = process.env.CANVAS_ACCESS_TOKEN;
+        const apiUrl = `https://uta.instructure.com/api/v1/users/${userId}/enrollments?enrollment_state=active`;
+
+        // Make an API call to Canvas to get the enrollments for the logged-in user
+        const response = await axios.get(apiUrl, {
+            headers: {
+                'Authorization': `Bearer ${canvasToken}`
+            }
+        });
+
+        const enrollments = response.data;
+        console.log(enrollments);
+
+        const filteredEnrollments = enrollments.filter(
+            (enrollment) => enrollment.course_id === parseInt(courseId, 10)
+        );
+
+        if (filteredEnrollments.length > 0){
+            const currentScore = filteredEnrollments[0].grades.current_score;
+
+            res.json(currentScore);
+        }
 
     } catch (error) {
         console.error('Error fetching course:', error.message);
