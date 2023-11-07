@@ -8,20 +8,35 @@ import ViewGrades from './components/ViewGrades';
 import Discussions from './components/Discussions'; // Import the Discussions component
 
 function App() {
+
+  const openNav = () => {
+    document.getElementById("sideNav").style.display = "block";
+  }
+
+  const closeNav = () => {
+    document.getElementById("sideNav").style.display = "none";
+  }
+
+
   return (
     <Router>
       <div className="App">
         <header className="App-header">
+          <div class="logo">
+            <img src="/images/GardePal_Transparent.png" alt=''/>
+          </div>
           <h1>GradePal</h1>
-          <nav>
-            <ul>
-              <li><Link to="/">Home</Link></li>
-              <li><Link to="/grades">Grades</Link></li>
-              <li><Link to="/discussions">Discussions</Link></li> {/* Add Discussions link */}
-            </ul>
-          </nav>
+          <span onClick={openNav}>&#9776;</span>
         </header>
         
+      <div id="sideNav" class="sidenav">
+        <a href="javascript:void(0)" class="closebtn" onClick={closeNav}>&times;</a>
+        <li><Link to="/">Home</Link></li>
+        <li><Link to="/grades">Grades</Link></li>
+        <li><Link to="/discussions">Discussions</Link></li> {/* Add Discussions link */}
+      </div>
+
+
         <Routes>
           <Route path="/" element={<MyCourses />} />
           <Route path="/course/:courseId" element={<CourseWeights />} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import './ViewGrades.css';
 import axios from 'axios';
 
 function ViewGrades() {
@@ -67,18 +68,24 @@ function ViewGrades() {
 
 
     return (
-        <div>
-            <h1>Grades for: {courseInfo.courseName}</h1>
-            <p>Overall Score: {courseInfo.overallScore}</p>
-            <h2>Assignments</h2>
-            <ul>
-                {courseInfo.gradedAssignments.map((assignment, index) => (
-                    <li key={index}>
-                        {assignment[0]}: {assignment[1]}
-                    </li>
-                ))}
-            </ul>
-        </div>
+        <div className="grades-container">
+    <h1>Grades for: {courseInfo.courseName}</h1>
+    <p style={{fontSize: "larger"}}>Overall Score: {courseInfo.overallScore}</p>
+    <h2 className="assignments-title">Assignments</h2>
+    <div className="assignment-list">
+        <div className="assignment">
+                <p style={{fontWeight:"bold"}}>Name</p>
+                <p style={{fontWeight:"bold"}}>Score</p>
+            </div>
+
+        {courseInfo.gradedAssignments.map((assignment, index) => (
+            <div className="assignment" key={index}>
+                <p>{assignment[0]}</p>
+                <p>{assignment[1]}</p>
+            </div>
+        ))}
+    </div>
+</div>
     );
 }
 

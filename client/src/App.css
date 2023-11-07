@@ -17,6 +17,15 @@
   background-color: #282c34;   /* This is a typical color for create-react-app templates, adjust as needed */
   padding: 10px 20px;          /* Reduced the padding for a smaller header */
   text-align: center;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.logo img {
+  margin-right: 10px;
+  width: 100px;
+  height: auto;
 }
 
 .App-header h1 {
@@ -28,6 +37,51 @@
   color: #61dafb;
 }
 
+.App span {
+  margin-left: auto;
+  font-size: 1.5rem;
+  color: #f1f1f1;
+  cursor: pointer;
+}
+
+.sidenav {
+  display: none;
+  height: 100%;
+  width: 250px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 60px;
+}
+
+.sidenav a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #f1f1f1;
+}
+
+.sidenav .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+
 @keyframes App-logo-spin {
   from {
     transform: rotate(0deg);
@@ -35,4 +89,37 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  border-radius: 5px; /* 5px rounded corners */
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.cards-container {
+  padding: 2px 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+  gap: 10px;
+}
+
+.squareIcon {
+  width: 50px;
+  height: 50px;
+  background-color: #000;
+  border-radius: 5px;
+}
+
+.cardGrid {
+  display: grid;
+}
+
+
+li {
+  list-style-type: none;
 }

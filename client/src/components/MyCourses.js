@@ -20,15 +20,19 @@ function MyCourses() {
     }, []);
 
     return (
-        <div>
+        <div className="cardGrid">
             <h1>My Courses</h1>
-            <ul>
+            <div className="cards-container">
                 {courses.map(course => (
-                    <li key={course.id}>
-                        <Link to={`/course/${course.id}`}>{course.name}</Link> {/* Make each course clickable */}
-                    </li>
+                    <Link to={`/course/${course.id}`} key={course.id} className="card">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Square_gray.svg/2048px-Square_gray.svg.png" alt="img" style={{width:"100%"}}/>
+                        <div className="cardContainer">
+                            <h4><b>{course.name}</b></h4>
+                            <p>{course.id}</p>
+                        </div>
+                    </Link>
                 ))}
-            </ul>
+            </div>
         </div>
     );
 }

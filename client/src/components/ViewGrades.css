@@ -1,0 +1,22 @@
+.assignment-list {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    gap: 10px; /* Create space between items */
+    flex-direction: column;
+    left: 0;
+}
+
+.assignment {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two equal columns */
+    gap: 10px; /* Add space between columns */
+    border: 1px solid #ccc; /* Optional: Border for visual separation */
+    padding: 10px; /* Optional: Add padding for better spacing */
+    
+}
+
+.assignment p {
+    margin: 0; /* Reset margin for paragraphs */
+    
+}
