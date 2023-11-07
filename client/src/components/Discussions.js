@@ -5,21 +5,25 @@ function Discussions() {
     const [courses, setCourses] = useState([]);
     const [selectedCourse, setSelectedCourse] = useState(null);
     const [message, setMessage] = useState('');
-    const [chatHistory, setChatHistory] = useState({}); // New state for holding chat history
+    const [chatHistory, setChatHistory] = useState({});
+    const [userName, setUserName] = useState('');
 
     useEffect(() => {
         async function fetchCourses() {
             try {
-                const response = await axios.get('http://localhost:5000/api/courses/my-courses');
-                setCourses(response.data);
-                // Initialize chat history for each course
+                const coursesResponse = await axios.get('http://localhost:5000/api/courses/my-courses');
+                setCourses(coursesResponse.data);
                 let initialChat = {};
-                response.data.forEach(course => {
+                coursesResponse.data.forEach(course => {
                     initialChat[course.id] = [];
                 });
                 setChatHistory(initialChat);
+
+                // Fetch the user's profile to get their name
+                const profileResponse = await axios.get('http://localhost:5000/api/courses/my-profile');
+                setUserName(profileResponse.data.name);
             } catch (error) {
-                console.error("Error fetching courses:", error);
+                console.error("Error fetching data:", error);
             }
         }
         
@@ -28,7 +32,6 @@ function Discussions() {
 
     const selectCourse = (course) => {
         setSelectedCourse(course);
-        // Here you would fetch the discussion messages for the selected course
     };
 
     const handleMessageChange = (event) => {
@@ -36,18 +39,16 @@ function Discussions() {
     };
 
     const handleSendMessage = () => {
-        if (message.trim() && selectedCourse) {
-            // Append new message to the current chat history of the selected course
+        if (message.trim() && selectedCourse && userName) {
             const updatedChat = { ...chatHistory };
-            updatedChat[selectedCourse.id] = [...(chatHistory[selectedCourse.id] || []), message];
+            const newMessage = { text: message, user: userName };
+            updatedChat[selectedCourse.id] = [...(chatHistory[selectedCourse.id] || []), newMessage];
             setChatHistory(updatedChat);
-            // Clear the input after sending a message
             setMessage('');
         }
     };
 
     const handleKeyPress = (event) => {
-        // When user presses Enter, send the message
         if (event.key === 'Enter') {
             handleSendMessage();
         }
@@ -74,10 +75,9 @@ function Discussions() {
                     <>
                         <h2>{selectedCourse.name} - Discussions</h2>
                         <div className="chat-history" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                            {/* Map through the chat history for the selected course */}
-                            {chatHistory[selectedCourse.id] && chatHistory[selectedCourse.id].map((msg, index) => (
+                            {chatHistory[selectedCourse.id] && chatHistory[selectedCourse.id].map((message, index) => (
                                 <div key={index} style={{ background: '#f1f1f1', margin: '10px 0', padding: '5px' }}>
-                                    {msg}
+                                    <strong>{message.user}: </strong>{message.text}
                                 </div>
                             ))}
                         </div>
