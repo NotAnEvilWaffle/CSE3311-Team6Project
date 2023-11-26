@@ -3,6 +3,50 @@ const router = express.Router()
 const axios = require('axios')
 const Course = require('../models/Course')
 
+
+// Endpoint to fetch assignments due within a week for all courses
+router.get('/upcoming-assignments', async (req, res) => {
+  try {
+      const canvasToken = process.env.CANVAS_ACCESS_TOKEN;
+      const userId = req.query.userId; // Assuming you pass the user ID as a query parameter
+
+      // First, fetch the courses the user is enrolled in
+      const coursesResponse = await axios.get(`https://canvas.instructure.com/api/v1/users/${userId}/courses`, {
+          headers: { 'Authorization': `Bearer ${canvasToken}` }
+      });
+
+      // Extract course IDs from the response
+      const courseIds = coursesResponse.data.map(course => course.id);
+
+      // Now, fetch assignments for each course and filter by due date
+      let allAssignments = [];
+      for (const courseId of courseIds) {
+          const assignmentsResponse = await axios.get(`https://canvas.instructure.com/api/v1/courses/${courseId}/assignments`, {
+              headers: { 'Authorization': `Bearer ${canvasToken}` }
+          });
+
+          // Filter assignments due within the next 7 days
+          const upcomingAssignments = assignmentsResponse.data.filter(assignment => {
+              const dueDate = new Date(assignment.due_at);
+              const today = new Date();
+              const nextWeek = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
+              return dueDate >= today && dueDate <= nextWeek;
+          });
+
+          allAssignments.push(...upcomingAssignments);
+      }
+
+      // Sort the assignments by due date
+      allAssignments.sort((a, b) => new Date(a.due_at) - new Date(b.due_at));
+
+      res.json(allAssignments);
+  } catch (error) {
+      console.error('Error fetching upcoming assignments:', error.message);
+      res.status(500).json({ error: 'Failed to fetch upcoming assignments', details: error.message });
+  }
+});
+
+
 // Endpoint to fetch grades for a specific course from Canvas
 router.get('/:courseId/grades', async (req, res) => {
   try {
