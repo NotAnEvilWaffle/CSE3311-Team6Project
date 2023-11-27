@@ -1,22 +1,46 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 
 function ToDoList() {
     const [upcomingAssignments, setUpcomingAssignments] = useState([]);
+    const [newAssignmentName, setNewAssignmentName] = useState('');
+    const [newAssignmentDueDate, setNewAssignmentDueDate] = useState('');
 
+    // Load assignments from local storage when the component mounts
     useEffect(() => {
-        const fetchUpcomingAssignments = async () => {
-            try {
-                // Replace with the correct userID and adjust the endpoint if necessary
-                const response = await axios.get('http://localhost:5000/api/courses/upcoming-assignments?userId=YOUR_USER_ID');
-                setUpcomingAssignments(response.data);
-            } catch (error) {
-                console.error('Error fetching upcoming assignments:', error);
-            }
-        };
-
-        fetchUpcomingAssignments();
+        const storedAssignments = localStorage.getItem('assignments');
+        if (storedAssignments) {
+            setUpcomingAssignments(JSON.parse(storedAssignments));
+        } else {
+            // Fallback to hardcoded assignments if nothing in local storage
+            setUpcomingAssignments([
+                { name: 'HW4 for CSE-4345', due_at: '2023-11-29' },
+                { name: 'Project 2 for CSE 4309', due_at: '2023-11-30' },
+                { name: 'Individual Sprint Report #8 for CSE 4317', due_at: '2023-12-01' },
+                { name: 'Project presentation', due_at: '2023-11-30' }
+            ]);
+        }
     }, []);
+
+    // Save assignments to local storage whenever they change
+    useEffect(() => {
+        localStorage.setItem('assignments', JSON.stringify(upcomingAssignments));
+    }, [upcomingAssignments]);
+
+    const handleComplete = (index) => {
+        const newAssignments = upcomingAssignments.filter((_, i) => i !== index);
+        setUpcomingAssignments(newAssignments);
+    };
+
+    const handleAdd = (event) => {
+        event.preventDefault();
+        const newAssignment = {
+            name: newAssignmentName,
+            due_at: newAssignmentDueDate
+        };
+        setUpcomingAssignments([...upcomingAssignments, newAssignment]);
+        setNewAssignmentName('');
+        setNewAssignmentDueDate('');
+    };
 
     return (
         <div>
@@ -25,9 +49,26 @@ function ToDoList() {
                 {upcomingAssignments.map((assignment, index) => (
                     <li key={index}>
                         {assignment.name} - Due: {new Date(assignment.due_at).toLocaleDateString()}
+                        <button onClick={() => handleComplete(index)}>Mark as Completed</button>
                     </li>
                 ))}
             </ul>
+            <form onSubmit={handleAdd}>
+                <input
+                    type="text"
+                    value={newAssignmentName}
+                    onChange={(e) => setNewAssignmentName(e.target.value)}
+                    placeholder="Assignment Name"
+                    required
+                />
+                <input
+                    type="date"
+                    value={newAssignmentDueDate}
+                    onChange={(e) => setNewAssignmentDueDate(e.target.value)}
+                    required
+                />
+                <button type="submit">Add Assignment</button>
+            </form>
         </div>
     );
 }
