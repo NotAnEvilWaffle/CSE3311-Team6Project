@@ -1,25 +1,56 @@
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+
 
 function ToDoList() {
+    const { courseId } = useParams();
+    const [courses, setCourses] = useState([]);
+
     const [upcomingAssignments, setUpcomingAssignments] = useState([]);
     const [newAssignmentName, setNewAssignmentName] = useState('');
     const [newAssignmentDueDate, setNewAssignmentDueDate] = useState('');
 
     // Load assignments from local storage when the component mounts
     useEffect(() => {
-        const storedAssignments = localStorage.getItem('assignments');
-        if (storedAssignments) {
-            setUpcomingAssignments(JSON.parse(storedAssignments));
-        } else {
-            // Fallback to hardcoded assignments if nothing in local storage
-            setUpcomingAssignments([
-                { name: 'HW4 for CSE-4345', due_at: '2023-11-29' },
-                { name: 'Project 2 for CSE 4309', due_at: '2023-11-30' },
-                { name: 'Individual Sprint Report #8 for CSE 4317', due_at: '2023-12-01' },
-                { name: 'Project presentation', due_at: '2023-11-30' }
-            ]);
+        async function fetchCourses() {
+            try {
+                const response = await axios.get('http://localhost:5000/api/courses/my-courses');
+                // console.log("Fetched Courses:", response.data); 
+                setCourses(response.data);
+            } catch (error) {
+                console.error("Error fetching courses:", error);
+            }
         }
+
+        fetchCourses();
     }, []);
+
+    useEffect(() => {
+        async function fetchUpcoming(){
+            try{
+                let listOfAssignmentLists = [];
+                let allAssignments = [];
+                const courseIDs = courses.map(course => course.id);
+
+                for(const courseId of courseIDs) {
+                    const response = await axios.get(`http://localhost:5000/api/courses/${courseId}/upcomingAssignments`)
+                    
+                    const assignments = response.data.map(({ name, due_at }) => ({ assignment_name: name, due_date: due_at }))
+                    allAssignments = [...allAssignments, ...assignments];
+                }
+                
+                setUpcomingAssignments(allAssignments);
+                
+            } catch (error){
+                console.error("Error fetching upcoming assignments", error);
+            }
+        }
+
+        if (courses.length > 0) {
+            fetchUpcoming();
+        }
+    }, [courses])
 
     // Save assignments to local storage whenever they change
     useEffect(() => {
@@ -34,8 +65,8 @@ function ToDoList() {
     const handleAdd = (event) => {
         event.preventDefault();
         const newAssignment = {
-            name: newAssignmentName,
-            due_at: newAssignmentDueDate
+            assignment_name: newAssignmentName,
+            due_date: newAssignmentDueDate
         };
         setUpcomingAssignments([...upcomingAssignments, newAssignment]);
         setNewAssignmentName('');
@@ -48,7 +79,7 @@ function ToDoList() {
             <ul>
                 {upcomingAssignments.map((assignment, index) => (
                     <li key={index}>
-                        {assignment.name} - Due: {new Date(assignment.due_at).toLocaleDateString()}
+                        {assignment.assignment_name} - Due: {new Date(assignment.due_date).toLocaleDateString()}
                         <button onClick={() => handleComplete(index)}>Mark as Completed</button>
                     </li>
                 ))}

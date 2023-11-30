@@ -85,30 +85,26 @@ router.get('/:courseId/grades', async (req, res) => {
   }
 })
 
-// ... (other requires and router setup)
-
-// ... (other requires and router setup)
-
-// Endpoint to fetch the current user's profile from Canvas
-router.get('/my-profile', async (req, res) => {
+// Endpoint to set the weights for a specific course.
+router.post('/:courseId/weights', async (req, res) => {
   try {
-    const canvasToken = process.env.CANVAS_ACCESS_TOKEN
-    const apiUrl = 'https://uta.instructure.com/api/v1/users/self'
+    const { courseId } = req.params
+    const weights = req.body
 
-    // Make an API call to Canvas using the token.
-    const response = await axios.get(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${canvasToken}`
-      }
-    })
+    const parsedCourseId = Number(courseId)
+    const course = await Course.findOne({ courseId: parsedCourseId })
 
-    // The response should contain the user's profile information, including their ID
-    const userProfile = response.data
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' })
+    }
 
-    res.json(userProfile)
+    course.weights = weights
+    await course.save()
+
+    res.json({ message: 'Weights updated successfully', course })
   } catch (error) {
-    console.error('Error fetching user profile:', error.message)
-    res.status(500).json({ error: 'Failed to fetch user profile', details: error.message })
+    console.error('Error updating weights:', error.message)
+    res.status(500).json({ error: 'Failed to update weights', details: error.message })
   }
 })
 
@@ -117,6 +113,28 @@ router.get('/:courseId/assignments', async (req, res) => {
     const { courseId } = req.params
     const canvasToken = process.env.CANVAS_ACCESS_TOKEN
     const apiUrl = `https://canvas.instructure.com/api/v1/user/courses/${courseId}/assignments`
+
+    // Make an API call to Canvas to get the assignments for the specified course
+    const response = await axios.get(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${canvasToken}`
+      }
+    })
+
+    const assignments = response.data
+
+    res.json(assignments)
+  } catch (error) {
+    console.error('Error fetching assignments:', error.message)
+    res.status(500).json({ error: 'Failed to fetch assignments', details: error.message })
+  }
+})
+
+router.get('/:courseId/upcomingAssignments', async (req, res) => {
+  try {
+    const { courseId } = req.params
+    const canvasToken = process.env.CANVAS_ACCESS_TOKEN
+    const apiUrl = `https://uta.instructure.com/api/v1/users/self/courses/${courseId}/assignments?bucket=upcoming`
 
     // Make an API call to Canvas to get the assignments for the specified course
     const response = await axios.get(apiUrl, {
@@ -312,27 +330,30 @@ router.get('/my-courses', async (req, res) => {
   }
 })
 
-// Endpoint to set the weights for a specific course.
-router.post('/:courseId/weights', async (req, res) => {
+// Endpoint to fetch the current user's profile from Canvas
+router.get('/my-profile', async (req, res) => {
   try {
-    const { courseId } = req.params
-    const weights = req.body
+    const canvasToken = process.env.CANVAS_ACCESS_TOKEN
+    const apiUrl = 'https://uta.instructure.com/api/v1/users/self'
 
-    const parsedCourseId = Number(courseId)
-    const course = await Course.findOne({ courseId: parsedCourseId })
+    // Make an API call to Canvas using the token.
+    const response = await axios.get(apiUrl, {
+      headers: {
+        Authorization: `Bearer ${canvasToken}`
+      }
+    })
 
-    if (!course) {
-      return res.status(404).json({ error: 'Course not found' })
-    }
+    // The response should contain the user's profile information, including their ID
+    const userProfile = response.data
 
-    course.weights = weights
-    await course.save()
-
-    res.json({ message: 'Weights updated successfully', course })
+    res.json(userProfile)
   } catch (error) {
-    console.error('Error updating weights:', error.message)
-    res.status(500).json({ error: 'Failed to update weights', details: error.message })
+    console.error('Error fetching user profile:', error.message)
+    res.status(500).json({ error: 'Failed to fetch user profile', details: error.message })
   }
 })
+
+
+
 
 module.exports = router
